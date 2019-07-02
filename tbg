@@ -1,0 +1,196 @@
+#!/bin/bash
+
+# Box drawing characters:
+horizontal="\xE2\x94\x80"
+vertical="\xE2\x94\x82"
+down_and_right="\xE2\x94\x8C"
+down_and_left="\xE2\x94\x90"
+up_and_right="\xE2\x94\x94"
+up_and_left="\xE2\x94\x98"
+vertical_and_right="\xE2\x94\x9C"
+vertical_and_left="\xE2\x94\xA4"
+horizontal_and_down="\xE2\x94\xAC"
+horizontal_and_up="\xE2\x94\xB4"
+vertical_and_horizontal="\xE2\x94\xBC"
+
+declare -a input
+declare -a alignment
+declare -a column_size
+
+file=""
+header_line=false
+
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+parse_args()
+{
+	if (( "$#" > 1 )); then
+		echo "Usage: $0 [file]"
+		exit 1
+	elif (( "$#" == 1 )); then
+		file="$1"
+	fi
+}
+
+check_encoding()
+{
+	if ! (locale | grep -e 'utf8' -e 'UTF-8') &>/dev/null; then
+		exit 2
+	fi
+}
+
+read_input()
+{
+	if [[ -z "$file" ]]; then
+		local fd=1
+		file="/dev/null"
+	else
+		if [[ ! -e "$file" ]]; then
+			exit 3
+		fi
+		local fd=3
+	fi
+
+	local index=0
+	while read -r -u "$fd" line; do
+		line="${line#"|"}"
+		line="${line%"|"}"
+		input[$index]="$line"
+		index=$(( ++index ))
+	done 3< "$file"
+}
+
+parse_input()
+{
+	if (( ${#input[@]} >= 2 )); then
+		if [[ "${input[1]}" =~ ^([[:space:]]*[=:]+[[:space:]]+\|)*([[:space:]]*[=:]+[[:space:]]*)+$ ]]; then
+			header_line=true
+			set_alignment ${input[1]}
+			input=( "${input[@]/${input[1]}}" )
+		fi
+	fi
+	set_column_size
+}
+
+set_alignment()
+{
+	local row=( $(split "$@") )
+	local index=0
+	for i in ${row[@]}; do
+		i=$(strip $i)
+		local first="${i:0:1}"
+		local last="${i:$((${#i}-1)):1}"
+		if [[ $first == "=" && $last == "=" || $first == ":" && $last == ":" ]]; then
+			alignment[$index]="center"
+		elif [[ $first == ":" ]]; then
+			alignment[$index]="left"
+		else
+			alignment[$index]="right"
+		fi
+		index=$(( ++index ))
+	done
+}
+
+set_column_size()
+{
+	for (( i=0; i < ${#input[@]}; ++i )); do
+		local row=( $(split "${input[$i]}") )
+		local index=0
+		for elem in ${row[@]}; do
+			if [[ -z "$elem" ]]; then
+				continue
+			fi
+			elem=" $(strip $elem) "
+			if [[ -z ${column_size[$index]} || ${column_size[$index]} -lt ${#elem} ]]; then
+				column_size[$index]=${#elem}
+			fi
+			index=$(( ++index ))
+		done
+	done
+}
+
+draw_table()
+{
+	draw_horizontal_border_line "$down_and_right" "$horizontal_and_down" "$down_and_left"
+
+	local line_no=0
+	for i in "${input[@]}"; do
+		if [[ -z $i ]]; then
+			line_no=$(( ++line_no ))
+			continue
+		fi
+		local index=0
+		local row=( $(split "$i") )
+		for j in "${row[@]}"; do
+			j=" $(strip $j) "
+			local len=${#j}
+			if [[ $line_no -eq 0 && "$header_line" = true ]]; then
+				j="${bold}$j${normal}"
+			fi
+			local align="${alignment[$index]}"
+			local colsize="${column_size[$index]}"
+			if (( $colsize > $len )); then
+				if [[ "$align" == "left" ]]; then
+					j="$j$(printf %$(( $colsize-$len ))s)"
+				elif [[ "$align" == "right" ]]; then
+					j="$(printf %$(( $colsize-$len ))s)$j"
+				elif [[ $(( ($colsize-$len)%2 )) -eq 0 ]]; then
+					j="$(printf %$(( ($colsize-$len)/2 ))s)$j$(printf %$(( ($colsize-$len)/2 ))s)"
+				else
+					j="$(printf %$(( ($colsize-$len)/2-1 ))s)$j$(printf %$(( ($colsize-$len)/2 ))s)"
+				fi
+			fi
+			echo -ne "$vertical$j"
+			index=$(( ++index ))
+		done
+		echo -e "$vertical"
+
+		if (( $line_no < ${#input[@]}-1 )); then
+			draw_horizontal_border_line "$vertical_and_right" "$vertical_and_horizontal" "$vertical_and_left"
+		fi
+
+		line_no=$(( ++line_no ))
+	done
+
+	draw_horizontal_border_line "$up_and_right" "$horizontal_and_up" "$up_and_left"
+}
+
+draw_horizontal_border_line()
+{
+	if (( $# < 3 )); then
+		exit 4
+	fi
+
+	local index=0
+	echo -ne "$1"
+	for i in "${column_size[@]}"; do
+		echo -ne "$(printf %$((i))s | sed "s/ /${horizontal}/g")"
+		if (( index < ${#column_size[@]}-1 )); then
+			echo -ne "$2"
+		fi
+		index=$(( ++index ))
+	done
+	echo -e "$3"
+
+}
+
+split()
+{
+        IFS='|' read -ra arr <<< "$@"
+        echo ${arr[@]}
+}
+
+strip()
+{
+	for i in "$@"; do
+		i="$(echo -e "$i" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+		echo $i
+	done
+}
+
+parse_args $@
+check_encoding
+read_input
+parse_input
+draw_table
