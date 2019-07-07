@@ -7,34 +7,62 @@ Tbg is a table generator. It reads Markdown-like input and generates a table usi
 ``` shell
 tbg [file]
 ```
-## Example
+### Input syntax
 
-Input:
-
-```
-| Header1 | Header2 | Header3 | Header4 |
-| :====== | ======= | :=====: | ======: |
-| cell1   | cell2   | cell3   | cell4   |
-| cell5   | cell6   | cell7   | cell8   |
-| cell9   | cell10  | cell11  | cell12  |
-| cell13  | cell14  | cell15  | cell16  |
-```
-
-Output:
+Table definition consist of hyphens creating each column's header and pipes separating each column.
 
 ```
-┌─────────┬─────────┬─────────┬─────────┐
-│ Header1 │ Header2 │ Header3 │ Header4 │
-├─────────┼─────────┼─────────┼─────────┤
-│ cell1   │  cell2  │  cell3  │   cell4 │
-├─────────┼─────────┼─────────┼─────────┤
-│ cell5   │  cell6  │  cell7  │   cell8 │
-├─────────┼─────────┼─────────┼─────────┤
-│ cell9   │  cell10 │  cell11 │  cell12 │
-├─────────┼─────────┼─────────┼─────────┤
-│ cell13  │  cell14 │  cell15 │  cell16 │
-└─────────┴─────────┴─────────┴─────────┘
+| First Header | Second Header |
+| ------------ | ------------- |
+| Cell         | Cell          |
+| Cell         | Cell          |
 ```
+
+| First Header | Second Header |
+| ------------ | ------------- |
+| Cell         | Cell          |
+| Cell         | Cell          |
+
+The pipes on either end of the table and the header row are optional.
+
+```
+First Header | Second Header
+Cell         | Cell
+Cell         | Cell
+```
+
+| First Header | Second Header |
+| ------------ | ------------- |
+| Cell         | Cell          |
+| Cell         | Cell          |
+
+Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least one hyphen in each column of the header row.
+
+```
+| First Header | Second Header |
+| - | - |
+| Cell | Cell |
+| Cell | Cell |
+```
+
+| First Header | Second Header |
+| --- | --- |
+| Cell | Cell |
+| Cell | Cell |
+
+You can align text to the left, right, or center of a column by including colons to the left, right, or on both sides of the hyphen(s) within the header row.
+
+```
+| Left-aligned | Center-aligned | Right-aligned |
+| :----------- | :------------: | ------------: |
+| Cell         | Cell           | Cell          |
+| Cell         | Cell           | Cell          |
+```
+
+| Left-aligned | Center-aligned | Right-aligned |
+| :----------- | :------------: | ------------: |
+| Cell         | Cell           | Cell          |
+| Cell         | Cell           | Cell          |
 
 ## License
 
