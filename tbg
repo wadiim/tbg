@@ -81,12 +81,12 @@ set_alignment()
 		i=$(strip $i)
 		local first="${i:0:1}"
 		local last="${i:$((${#i}-1)):1}"
-		if [[ $first == "-" && $last == "-" || $first == ":" && $last == ":" ]]; then
+		if [[ $first == ":" && $last == ":" ]]; then
 			alignment[$index]="center"
-		elif [[ $first == ":" ]]; then
-			alignment[$index]="left"
-		else
+		elif [[ $first == "-" && $last == ":" ]]; then
 			alignment[$index]="right"
+		else
+			alignment[$index]="left"
 		fi
 		index=$(( ++index ))
 	done
@@ -131,7 +131,7 @@ draw_table()
 			local align="${alignment[$index]}"
 			local colsize="${column_size[$index]}"
 			if (( $colsize > $len )); then
-				if [[ "$align" == "left" ]]; then
+				if [[ -z $align || "$align" == "left" ]]; then
 					j="$j$(printf %$(( $colsize-$len ))s)"
 				elif [[ "$align" == "right" ]]; then
 					j="$(printf %$(( $colsize-$len ))s)$j"
