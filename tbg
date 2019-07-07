@@ -64,7 +64,7 @@ read_input()
 parse_input()
 {
 	if (( ${#input[@]} >= 2 )); then
-		if [[ "${input[1]}" =~ ^([[:space:]]*[=:]+[[:space:]]+\|)*([[:space:]]*[=:]+[[:space:]]*)+$ ]]; then
+		if [[ "${input[1]}" =~ ^([[:space:]]*[-:]+[[:space:]]+\|)*([[:space:]]*[-:]+[[:space:]]*)+$ ]]; then
 			header_line=true
 			set_alignment ${input[1]}
 			input=( "${input[@]/${input[1]}}" )
@@ -81,7 +81,7 @@ set_alignment()
 		i=$(strip $i)
 		local first="${i:0:1}"
 		local last="${i:$((${#i}-1)):1}"
-		if [[ $first == "=" && $last == "=" || $first == ":" && $last == ":" ]]; then
+		if [[ $first == "-" && $last == "-" || $first == ":" && $last == ":" ]]; then
 			alignment[$index]="center"
 		elif [[ $first == ":" ]]; then
 			alignment[$index]="left"
