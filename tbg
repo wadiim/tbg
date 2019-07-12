@@ -66,7 +66,7 @@ parse_input()
 	if (( ${#input[@]} >= 2 )); then
 		if [[ "${input[1]}" =~ ^([[:space:]]*[-:]+[[:space:]]+\|)*([[:space:]]*[-:]+[[:space:]]*)+$ ]]; then
 			header_line=true
-			set_alignment ${input[1]}
+			set_alignment "${input[1]}"
 			input=( "${input[@]/${input[1]}}" )
 		fi
 	fi
@@ -77,13 +77,13 @@ set_alignment()
 {
 	local row=( $(split "$@") )
 	local index=0
-	for i in ${row[@]}; do
-		i=$(strip $i)
+	for i in "${row[@]}"; do
+		i=$(strip "$i")
 		local first="${i:0:1}"
 		local last="${i:$((${#i}-1)):1}"
-		if [[ $first == ":" && $last == ":" ]]; then
+		if [[ "$first" == ":" && "$last" == ":" ]]; then
 			alignment[$index]="center"
-		elif [[ $first == "-" && $last == ":" ]]; then
+		elif [[ "$first" == "-" && "$last" == ":" ]]; then
 			alignment[$index]="right"
 		else
 			alignment[$index]="left"
@@ -97,7 +97,7 @@ set_column_size()
 	for (( i=0; i < ${#input[@]}; ++i )); do
 		local row=( $(split "${input[$i]}") )
 		local index=0
-		for elem in ${row[@]}; do
+		for elem in "${row[@]}"; do
 			if [[ -z "$elem" ]]; then
 				continue
 			fi
@@ -116,7 +116,7 @@ draw_table()
 
 	local line_no=0
 	for i in "${input[@]}"; do
-		if [[ -z $i ]]; then
+		if [[ -z "$i" ]]; then
 			line_no=$(( ++line_no ))
 			continue
 		fi
@@ -131,7 +131,7 @@ draw_table()
 			local align="${alignment[$index]}"
 			local colsize="${column_size[$index]}"
 			if (( $colsize > $len )); then
-				if [[ -z $align || "$align" == "left" ]]; then
+				if [[ -z "$align" || "$align" == "left" ]]; then
 					j="$j$(printf %$(( $colsize-$len ))s)"
 				elif [[ "$align" == "right" ]]; then
 					j="$(printf %$(( $colsize-$len ))s)$j"
@@ -178,14 +178,14 @@ draw_horizontal_border_line()
 split()
 {
         IFS='|' read -ra arr <<< "$@"
-        echo ${arr[@]}
+        echo "${arr[@]}"
 }
 
 strip()
 {
 	for i in "$@"; do
 		i="$(echo -e "$i" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-		echo $i
+		echo "$i"
 	done
 }
 
