@@ -75,7 +75,7 @@ parse_input()
 
 set_alignment()
 {
-	local row=( $(split "$@") )
+        IFS='|' read -ra row <<< "$@"
 	local index=0
 	for i in "${row[@]}"; do
 		i=$(strip "$i")
@@ -95,7 +95,7 @@ set_alignment()
 set_column_size()
 {
 	for (( i=0; i < ${#input[@]}; ++i )); do
-		local row=( $(split "${input[$i]}") )
+        	IFS='|' read -ra row <<< "${input[$i]}"
 		local index=0
 		for elem in "${row[@]}"; do
 			if [[ -z "$elem" ]]; then
@@ -121,9 +121,9 @@ draw_table()
 			continue
 		fi
 		local index=0
-		local row=( $(split "$i") )
+        	IFS='|' read -ra row <<< "$i"
 		for j in "${row[@]}"; do
-			j=" $(strip $j) "
+			j=" $(strip "$j") "
 			local len=${#j}
 			if [[ $line_no -eq 0 && "$header_line" = true ]]; then
 				j="${bold}$j${normal}"
@@ -173,12 +173,6 @@ draw_horizontal_border_line()
 	done
 	echo -e "$3"
 
-}
-
-split()
-{
-        IFS='|' read -ra arr <<< "$@"
-        echo "${arr[@]}"
 }
 
 strip()
