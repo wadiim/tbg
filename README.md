@@ -13,7 +13,7 @@ Table definition consist of hyphens creating each column's header and pipes sepa
 
 ![example1](https://user-images.githubusercontent.com/33803413/61164872-c76bb180-a519-11e9-9f4a-a293cb09d9d2.png)
 
-The pipes on either end of the table and the header row are optional.
+The outer pipes and the header row are optional.
 
 ![example2](https://user-images.githubusercontent.com/33803413/61164879-dbafae80-a519-11e9-85cf-d46537843e80.png)
 
